@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}تسجيل الدخول · بوابة الناخبين{% endblock %}
+
+{% block header_actions %}
+<nav aria-label="auth links">
+    <span class="muted">منصة التحقق للناخبين</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<section class="card auth-card">
+    <h1>ادخل إلى حسابك الانتخابي</h1>
+    <p class="muted">
+        أدخل رقم الناخب المخصص لك من قبل المفوضية لمتابعة بياناتك ورفع صور البطاقات المطلوبة.
+    </p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="field-error">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+        <div class="form-group">
+            {{ form.voter_number.label_tag }}
+            {{ form.voter_number }}
+            {% if form.voter_number.errors %}
+                <div class="field-error">{{ form.voter_number.errors.0 }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn-primary">دخول</button>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}لوحة إدارة الناخبين{% endblock %}
+
+{% block header_actions %}
+<nav aria-label="admin actions" class="header-actions">
+    <span class="muted">المسؤول: {{ admin_voter.full_name }}</span>
+    <a class="btn-outline" href="{% url 'voters:dashboard' %}">عرض واجهة الناخب</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<section class="stack spacing-lg admin-section">
+    <header class="page-header">
+        <h1>لوحة إدارة الناخبين</h1>
+        <p class="muted">متابعة حالة رفع الوثائق لجميع الناخبين في النظام.</p>
+    </header>
+
+    <div class="stats-grid">
+        <article class="stats-card">
+            <p class="label">عدد الناخبين</p>
+            <p class="value">{{ summary.total }}</p>
+        </article>
+        <article class="stats-card">
+            <p class="label">أكملوا الرفع</p>
+            <p class="value success">{{ summary.completed }}</p>
+        </article>
+        <article class="stats-card">
+            <p class="label">بانتظار المراجعة</p>
+            <p class="value warning">{{ summary.pending }}</p>
+        </article>
+        <article class="stats-card">
+            <p class="label">فشل التحقق</p>
+            <p class="value danger">{{ summary.failed }}</p>
+        </article>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>رقم الناخب</th>
+                    <th>سنة الميلاد</th>
+                    <th>الرقم الوطني</th>
+                    <th>آخر رفع</th>
+                    <th>حالة الهوية</th>
+                    <th>حالة بطاقة الناخب</th>
+                    <th>الحالة العامة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rows %}
+                    <tr class="status-{{ item.status_key }}">
+                        <td>{{ item.person.full_name }}</td>
+                        <td dir="ltr">{{ item.person.voter_number }}</td>
+                        <td>{% if item.person.birth_year %}{{ item.person.birth_year }}{% else %}-{% endif %}</td>
+                        <td dir="ltr">{% if item.person.national_id_number %}{{ item.person.national_id_number }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if item.latest_upload %}
+                                {{ item.latest_upload|date:"Y-m-d H:i" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.has_national %}
+                                {% if item.national_status == "passed" %}
+                                    <span class="badge badge-success">مقبول</span>
+                                {% elif item.national_status == "failed" %}
+                                    <span class="badge badge-danger">مرفوض</span>
+                                {% else %}
+                                    <span class="badge badge-warning">قيد المراجعة</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge">غير متوفر</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.has_voter_card %}
+                                {% if item.voter_status == "passed" %}
+                                    <span class="badge badge-success">مقبول</span>
+                                {% elif item.voter_status == "failed" %}
+                                    <span class="badge badge-danger">مرفوض</span>
+                                {% else %}
+                                    <span class="badge badge-warning">قيد المراجعة</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge">غير متوفر</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ item.status_key }}">{{ item.status_label }}</span>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">لا يوجد بيانات حتى الآن.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

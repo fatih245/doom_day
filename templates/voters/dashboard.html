@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم · بوابة الناخبين{% endblock %}
+
+{% block header_actions %}
+<nav aria-label="dashboard actions" class="header-actions">
+    <span class="muted">مرحبًا، {{ voter.full_name }}</span>
+    {% if is_admin %}
+    <a class="btn-outline" href="{% url 'voters:admin_dashboard' %}">لوحة الإدارة</a>
+    {% endif %}
+    <a class="btn-outline" href="{% url 'voters:logout' %}">تسجيل الخروج</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<section class="grid">
+    <article class="card">
+        <header class="card-header">
+            <h1>رفع صور الوثائق المطلوبة</h1>
+            <p class="muted">
+                يرجى التأكد من أن الصورتين واضحتان، وتظهر فيهما كل الزوايا، وأن التفاصيل مقروءة.
+            </p>
+        </header>
+        <form method="post" enctype="multipart/form-data" class="stack spacing-lg" novalidate>
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.national_id_image.label_tag }}
+                {{ form.national_id_image }}
+                {% if form.national_id_image.errors %}
+                    <div class="field-error">{{ form.national_id_image.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.voter_card_image.label_tag }}
+                {{ form.voter_card_image }}
+                {% if form.voter_card_image.errors %}
+                    <div class="field-error">{{ form.voter_card_image.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn-primary">رفع الصورتين</button>
+        </form>
+        <footer class="card-footer">
+            <dl class="voter-meta">
+                <div>
+                    <dt>اسم الناخب</dt>
+                    <dd>{{ voter.full_name }}</dd>
+                </div>
+                <div>
+                    <dt>رقم الناخب</dt>
+                    <dd dir="ltr">{{ voter.voter_number }}</dd>
+                </div>
+                {% if voter.email %}
+                <div>
+                    <dt>البريد الإلكتروني</dt>
+                    <dd>{{ voter.email }}</dd>
+                </div>
+                {% endif %}
+                {% if voter.birth_year %}
+                <div>
+                    <dt>سنة الميلاد</dt>
+                    <dd>{{ voter.birth_year }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+        </footer>
+    </article>
+
+    <aside class="card">
+        <header class="card-header">
+            <h2>سجل التحقق</h2>
+            <p class="muted">تابع نتائج التحقق الآلي للوثائق المرفوعة.</p>
+        </header>
+        <section class="document-section">
+            <h3>الهوية الوطنية</h3>
+            {% if national_docs %}
+                <ul class="document-list">
+                    {% for document in national_docs %}
+                        <li class="document-item">
+                            <div class="document-meta">
+                                <strong>{{ document.uploaded_at|date:"d M Y ، H:i" }}</strong>
+                                {% if document.validation_status %}
+                                    <span class="status status-{{ document.validation_status }}">{{ document.get_validation_status_display }}</span>
+                                {% endif %}
+                            </div>
+                            {% if document.validation_errors %}
+                                <p class="field-error">{{ document.validation_errors }}</p>
+                            {% endif %}
+                            <a href="{{ document.image.url }}" target="_blank" rel="noopener" class="btn-link">عرض الصورة</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="muted">لم يتم رفع صورة الهوية الوطنية بعد.</p>
+            {% endif %}
+        </section>
+        <section class="document-section">
+            <h3>بطاقة الناخب</h3>
+            {% if voter_card_docs %}
+                <ul class="document-list">
+                    {% for document in voter_card_docs %}
+                        <li class="document-item">
+                            <div class="document-meta">
+                                <strong>{{ document.uploaded_at|date:"d M Y ، H:i" }}</strong>
+                                {% if document.validation_status %}
+                                    <span class="status status-{{ document.validation_status }}">{{ document.get_validation_status_display }}</span>
+                                {% endif %}
+                            </div>
+                            {% if document.validation_errors %}
+                                <p class="field-error">{{ document.validation_errors }}</p>
+                            {% endif %}
+                            <a href="{{ document.image.url }}" target="_blank" rel="noopener" class="btn-link">عرض الصورة</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="muted">لم يتم رفع صورة بطاقة الناخب بعد.</p>
+            {% endif %}
+        </section>
+    </aside>
+</section>
+{% endblock %}
